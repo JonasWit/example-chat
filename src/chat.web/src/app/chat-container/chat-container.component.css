@@ -1,0 +1,16 @@
+.stack-panel {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+ul {
+  list-style: none;
+  margin: 1rem;
+  padding: 0;
+  flex-direction: column;
+  gap: 2rem;
+}

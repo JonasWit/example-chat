@@ -1,0 +1,15 @@
+<div class="message-contianer">
+  <p class="mat-caption sent-by-font" [class.align-right]="!isBotGenerated()">
+    {{ isBotGenerated() ? "BOT" : "USER" }}
+  </p>
+
+  <p [class.align-right]="!isBotGenerated()">{{ message().text }}</p>
+  @if (message().sentBy === "Bot" && !busyReceiving()) {
+  <mat-icon (click)="changeScore(2)" [class.clicked]="isUpvoted()"
+    >thumb_up</mat-icon
+  >
+  <mat-icon (click)="changeScore(1)" [class.clicked]="isDownvoted()"
+    >thumb_down</mat-icon
+  >
+  }
+</div>

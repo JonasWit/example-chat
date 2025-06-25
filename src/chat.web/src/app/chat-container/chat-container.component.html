@@ -1,0 +1,21 @@
+@if(isFetching()){
+<div class="centererd-container">
+  <mat-spinner></mat-spinner>
+</div>
+} @else {
+
+<div #scrollContainer id="chatbox" class="stack-panel">
+  <ul>
+    @if (messages().length == 0) {
+    <li>
+      <p>Ask a question to start!</p>
+    </li>
+    } @else { @for (msg of messages(); track msg.id) {
+    <li>
+      <app-chat-message [message]="msg" />
+    </li>
+    <mat-divider></mat-divider>
+    } }
+  </ul>
+</div>
+}

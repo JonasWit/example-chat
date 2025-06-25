@@ -1,0 +1,21 @@
+.message-contianer {
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 0.3rem;
+}
+
+mat-icon.clicked {
+  color: blue;
+}
+
+.align-right {
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.sent-by-font {
+  font-size: x-small;
+  font-style: italic;
+  font-weight: 600;
+}

@@ -1,0 +1,7 @@
+@if (error()) {
+<app-error-modal title="An Error" [message]="error()" />
+}
+
+<app-header />
+<app-chat-container />
+<app-chat-input />

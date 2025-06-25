@@ -1,0 +1,17 @@
+<div class="center-container">
+  <p>Write your prompt</p>
+  <form (ngSubmit)="onSubmit()">
+    <p>
+      <textarea
+        id="userMessage"
+        rows="5"
+        name="userMessage"
+        [(ngModel)]="enteredMessage"
+      ></textarea>
+    </p>
+    <div class="button-container">
+      <button type="submit" [disabled]="busyReceiving()">Send</button>
+      <button type="button" (click)="onCancel()">Cancel</button>
+    </div>
+  </form>
+</div>
