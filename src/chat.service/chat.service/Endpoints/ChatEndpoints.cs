@@ -39,7 +39,7 @@ public static class ChatEndpoints
         return Results.Ok("Score changed");
     }
 
-    private static async Task<IResult> GetMessages( 
+    private static async Task<IResult> GetMessages(
         [FromServices] IMediator mediator,
         [FromServices] ChatRepository chatRepository, 
         CancellationToken cancellationToken)
@@ -52,11 +52,26 @@ public static class ChatEndpoints
         HttpContext context,
         [FromBody] IncomingMessage message,
         [FromServices] IMediator mediator,
-        [FromServices] IDummyChatService chatService,
+        [FromServices] ChatProvider chatProvider,
         CancellationToken cancellationToken)
     {
         try
         {
+            IDummyChatService? currentChatService = null;
+            if (DateTime.UtcNow.DayOfWeek != DayOfWeek.Monday)
+            {
+                currentChatService = chatProvider.GetService(ChosenService.S1);
+            }
+            else
+            {
+                currentChatService = chatProvider.GetService(ChosenService.S2);     
+            }
+
+            if (currentChatService is null)
+            {
+                throw new NotImplementedException();
+            }
+            
             var prompt = new ChatMessage
             {
                 SentBy = "Person",
@@ -86,7 +101,7 @@ public static class ChatEndpoints
             await context.Response.Body.FlushAsync(cancellationToken);
 
             var botMessageString = new StringBuilder();
-            await foreach (var chunk in chatService.GenerateResponse(message.Text, cancellationToken))
+            await foreach (var chunk in currentChatService.GenerateResponse(message.Text, cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
