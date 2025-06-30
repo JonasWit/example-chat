@@ -1,6 +1,6 @@
 namespace chat.service.Data.Entities;
 
-public class ChatMessage
+public record ChatMessage
 {
     public long Id { get; set; }
     public string SentBy { get; set; } = string.Empty;

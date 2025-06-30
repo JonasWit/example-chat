@@ -5,10 +5,10 @@
 
   <p [class.align-right]="!isBotGenerated()">{{ message().text }}</p>
   @if (message().sentBy === "Bot" && !busyReceiving()) {
-  <mat-icon (click)="changeScore(2)" [class.clicked]="isUpvoted()"
+  <mat-icon (click)="changeScore('Upvote')" [class.clicked]="isUpvoted()"
     >thumb_up</mat-icon
   >
-  <mat-icon (click)="changeScore(1)" [class.clicked]="isDownvoted()"
+  <mat-icon (click)="changeScore('Downvote')" [class.clicked]="isDownvoted()"
     >thumb_down</mat-icon
   >
   }

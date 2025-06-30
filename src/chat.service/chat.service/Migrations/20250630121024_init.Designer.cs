@@ -12,7 +12,7 @@ using chat.service.Data;
 namespace chat.service.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20250624170758_init")]
+    [Migration("20250630121024_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -36,8 +36,9 @@ namespace chat.service.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Score")
-                        .HasColumnType("integer");
+                    b.Property<string>("Score")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("SentBy")
                         .IsRequired()

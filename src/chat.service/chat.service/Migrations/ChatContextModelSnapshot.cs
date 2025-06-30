@@ -33,8 +33,9 @@ namespace chat.service.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Score")
-                        .HasColumnType("integer");
+                    b.Property<string>("Score")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("SentBy")
                         .IsRequired()

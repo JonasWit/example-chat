@@ -17,11 +17,11 @@ export class ChatInputComponent {
   enteredMessage = '';
 
   onSubmit() {
-    this.chatService.sendMessage(this.enteredMessage);
+    this.chatService.sendMessageWithSignalR(this.enteredMessage);
     this.enteredMessage = '';
   }
 
   onCancel() {
-    this.chatService.cancelMessage();
+    this.chatService.cancelMessageWithSignalR();
   }
 }

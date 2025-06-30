@@ -8,11 +8,6 @@ public enum ChosenService
 
 public class ChatProvider
 {
-    public ChatProvider()
-    {
-        
-    }
-    
     public IDummyChatService GetService(ChosenService chosenService)
     {
         switch (chosenService)
@@ -24,6 +19,7 @@ public class ChatProvider
             default:
                 throw new ArgumentOutOfRangeException(nameof(chosenService), chosenService, null);
         }
+
         throw new ArgumentOutOfRangeException(nameof(chosenService), chosenService, null);
     }
 }

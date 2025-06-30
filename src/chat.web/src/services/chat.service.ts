@@ -1,12 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, tap, throwError } from 'rxjs';
-import {
-  ChatMessage,
-  MessagePart,
-  ParsedNDJSON,
-  Score,
-} from '../models/message.model';
+import { ChatMessage } from '../models/message.model';
 import { ErrorService } from './error.service';
 
 @Injectable({ providedIn: 'root' })
@@ -17,10 +12,49 @@ export class ChatService {
   messages = signal<ChatMessage[]>([]);
   receivingResponse = signal<boolean>(false);
 
-  private abortController: AbortController | null = null;
   currentBotResponse: ChatMessage | undefined;
 
-  changeBotMessageScore(message: ChatMessage, score: Score) {
+  sendMessageWithSignalR(prompt: string) {
+    fetch('http://localhost:5000/ai-chat/new-message-signalr', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: prompt }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+        return response.json() as Promise<ChatMessage>;
+      })
+      .then((chatMsg: ChatMessage) => {
+        this.messages.set([...this.messages(), chatMsg]);
+      })
+      .catch((err) => {
+        console.log('Error on new-messsage', err);
+      })
+      .finally(() => {
+        this.receivingResponse.set(false);
+        console.log('Stream finished');
+      });
+  }
+
+  cancelMessageWithSignalR() {
+    fetch('http://localhost:5000/ai-chat/cancel-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .catch((err) => {
+        console.log('Error on cancel-message', err);
+      })
+      .finally(() => {
+        this.receivingResponse.set(false);
+        console.log('Stream finished');
+      });
+  }
+
+  changeBotMessageScore(message: ChatMessage, score: string) {
     const prevScore = message.score;
     message.score = score;
     const request = {
@@ -30,6 +64,8 @@ export class ChatService {
     this.messages.update((msgs) =>
       msgs.map((m) => (m.id === message.id ? { ...m, score: score } : m))
     );
+
+    console.log('sending request', request.Score);
 
     return this.httpClient
       .put('http://localhost:5000/ai-chat/rate-message', request)
@@ -68,113 +104,5 @@ export class ChatService {
         });
       })
     );
-  }
-
-  cancelMessage() {
-    if (this.abortController) {
-      this.abortController.abort();
-      this.abortController = null;
-    }
-  }
-
-  isChatMessage(obj: any): obj is ChatMessage {
-    const id = obj.id ?? obj.Id;
-    const sentBy = obj.sentBy ?? obj.SentBy;
-    const text = obj.text ?? obj.Text;
-    const score = obj.score ?? obj.Score;
-
-    return (
-      typeof id === 'number' &&
-      typeof sentBy === 'string' &&
-      typeof text === 'string' &&
-      typeof score === 'number'
-    );
-  }
-
-  isChatChunk(obj: any): obj is MessagePart {
-    return typeof obj.data === 'string';
-  }
-
-  parseNDJSON(input: string): ParsedNDJSON[] {
-    const result: ParsedNDJSON[] = [];
-    const lines = input.split('\n').filter((line) => line.trim() !== '');
-    for (const line of lines) {
-      try {
-        const obj = JSON.parse(line);
-
-        if (this.isChatMessage(obj)) {
-          result.push({
-            id: obj.id,
-            sentBy: obj.sentBy,
-            text: obj.text,
-            score: obj.score,
-          });
-        } else if (this.isChatChunk(obj)) {
-          result.push(obj);
-        } else {
-          console.warn('Unrecognized NDJSON object format:', obj);
-        }
-      } catch (error) {
-        console.error('Error parsing line:', line, error);
-      }
-    }
-
-    return result;
-  }
-
-  sendMessage(prompt: string) {
-    this.abortController = new AbortController();
-
-    fetch('http://localhost:5000/ai-chat/new-message', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text: prompt }),
-      signal: this.abortController.signal,
-    })
-      .then(async (res) => {
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-
-        this.receivingResponse.set(true);
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            break;
-          }
-
-          const chunk = decoder.decode(value, { stream: true });
-          const parsedObjects = this.parseNDJSON(chunk);
-
-          parsedObjects.forEach((po) => {
-            if (this.isChatChunk(po)) {
-              if (this.currentBotResponse !== undefined) {
-                this.currentBotResponse.text =
-                  this.currentBotResponse.text + ' ' + po.data;
-              }
-            } else {
-              this.messages.set([...this.messages(), po]);
-              if (po.sentBy === 'Bot') {
-                this.currentBotResponse = po;
-              }
-            }
-          });
-        }
-      })
-      .catch((err) => {
-        console.log('Fetch aborted', err);
-        if (err.name === 'AbortError') {
-          console.log('Fetch aborted');
-        } else if (err.message.includes('NetworkError')) {
-          this.errorService.showError('Network issue');
-        } else {
-          console.error('Streaming error:', err);
-        }
-      })
-      .finally(() => {
-        this.receivingResponse.set(false);
-        console.log('Stream finished');
-      });
   }
 }

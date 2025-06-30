@@ -1,5 +1,6 @@
 using chat.service.Data;
 using chat.service.Endpoints;
+using chat.service.Hubs;
 using chat.service.Services;
 using chat.service.Services.Utilities;
 
@@ -11,21 +12,25 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(p => 
-                p.AllowAnyOrigin()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod());
-        });
-        
+            options.AddPolicy("CorsPolicy", b => b
+                .WithOrigins("http://localhost:5050")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+            )
+        );
+
         builder.InstallServices(typeof(IServiceInstaller).Assembly);
         builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(Program).Assembly));
         var app = builder.Build();
-        app.UseCors();
+        app.UseCors("CorsPolicy");
         app.MapChatEndpoints();
-        
+
+        app.MapHub<BotGeneratorHub>("/bot-hub")
+            .RequireCors("CorsPolicy");
+
         // not for prod of course
-        DbSetup.PrepareDatabase(app); 
+        DbSetup.PrepareDatabase(app);
         app.Run();
     }
 }

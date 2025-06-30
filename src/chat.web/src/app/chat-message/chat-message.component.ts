@@ -16,7 +16,7 @@ export class ChatMessageComponent {
   message = input.required<ChatMessage>();
   private destroyRef = inject(DestroyRef);
 
-  changeScore(score: Score) {
+  changeScore(score: string) {
     const subscription = this.chatService
       .changeBotMessageScore(this.message(), score)
       .subscribe({

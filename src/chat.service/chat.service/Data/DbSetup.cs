@@ -9,10 +9,7 @@ public static class DbSetup
         Console.WriteLine("--> Preparing DB...");
         using var serviceScope = app.ApplicationServices.CreateScope();
         var context = serviceScope.ServiceProvider.GetService<ChatContext>();
-        if (context is not null)
-        {
-            ApplyMigrations(context);
-        }
+        if (context is not null) ApplyMigrations(context);
     }
 
     private static void ApplyMigrations(ChatContext context)
